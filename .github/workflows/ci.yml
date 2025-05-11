@@ -1,5 +1,6 @@
 name: CI Pipeline- Product_Store
 
+#trigger on push/pull requests
 on:
   push:
     branches:
@@ -7,14 +8,14 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch: #allows manual trigger via UI in GitHub
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout code #fetches the repo code so workflow can run on it
         uses: actions/checkout@v3
 
       - name: Set up Java
@@ -29,19 +30,23 @@ jobs:
       - name: Run Selenium Tests
         run: mvn test
 
+      - name: Set Status Message
+        if: always()
+        id: set_status
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "msg=✅ *Tests Passed!*" >> $GITHUB_OUTPUT
+          else
+            echo "msg=❌ *Tests Failed!*" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send Slack Notification (Linux/macOS)
         if: always() && runner.os != 'Windows'
         run: |
-          STATUS="${{ job.status }}"
-          if [ "$STATUS" == "success" ]; then
-            message="*Tests Passed!* ✅"
-          else
-            message="*Tests Failed!* ❌"
-          fi
           curl -X POST -H 'Content-type: application/json' \
-          --data "{\"text\":\"$message\nRepo: $GITHUB_REPOSITORY\nCommit: $GITHUB_SHA\nTrigger: $GITHUB_EVENT_NAME\nCheck logs: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" \
+          --data "{\"text\":\"${{ steps.set_status.outputs.msg }}\nRepo: $GITHUB_REPOSITORY\nCommit: $GITHUB_SHA\nTrigger: $GITHUB_EVENT_NAME\nCheck logs: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
-        shell: bash
+      
 
       - name: Send Email Notification on Failure
         if: always()
@@ -51,7 +56,13 @@ jobs:
           server_port: 587
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "CI Build Done"
-          body: "The CI pipeline has passed! Check the logs on GitHub Actions."
+          subject: "${{ steps.set_status.outputs.msg }} - Product_Store CI"
+          body:  |
+            ${{ steps.set_status.outputs.msg }}
+            
+            Repository: ${{ github.repository }}
+            Branch/Trigger: ${{ github.ref || github.event_name }}
+            Commit SHA: ${{ github.sha }}
+            Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           to: "equarsh33@gmail.com"
           from: "ladyquarshie25@gmail.com"
