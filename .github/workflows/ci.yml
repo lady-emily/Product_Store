@@ -1,0 +1,57 @@
+name: CI Pipeline- Product_Store
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Maven
+        run: mvn -version
+
+      - name: Run Selenium Tests
+        run: mvn test
+
+      - name: Send Slack Notification (Linux/macOS)
+        if: always() && runner.os != 'Windows'
+        run: |
+          STATUS="${{ job.status }}"
+          if [ "$STATUS" == "success" ]; then
+            message="*Tests Passed!* ✅"
+          else
+            message="*Tests Failed!* ❌"
+          fi
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"$message\nRepo: $GITHUB_REPOSITORY\nCommit: $GITHUB_SHA\nTrigger: $GITHUB_EVENT_NAME\nCheck logs: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+        shell: bash
+
+      - name: Send Email Notification on Failure
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "CI Build Done"
+          body: "The CI pipeline has passed! Check the logs on GitHub Actions."
+          to: "equarsh33@gmail.com"
+          from: "ladyquarshie25@gmail.com"
