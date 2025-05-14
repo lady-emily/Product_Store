@@ -97,10 +97,6 @@ public class HomePage {
         return allValid;
     }
 
-
-
-
-
     public ProductSGS6 clickSamsungGalaxyS6() {
         wait.until(ExpectedConditions.elementToBeClickable(samsungGalaxyS6)).click();
         return new ProductSGS6(driver);
@@ -109,5 +105,9 @@ public class HomePage {
     public CartPage clickCart() {
         wait.until(ExpectedConditions.elementToBeClickable(cart)).click();
         return new CartPage(driver);
+    }
+
+    public void clickContact() {
+        driver.findElement(By.id("contact")).click();
     }
 }
