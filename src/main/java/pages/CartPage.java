@@ -21,8 +21,10 @@ public class CartPage {
     private By cartRows = By.cssSelector("tr.success");
     private By home = By.cssSelector("#navbarExample > ul > li.nav-item.active > a");
     private By deleteLink = By.linkText("Delete");
-    private By placeOrderBtn = By.xpath("/html/body/div[6]/div/div[2]/button");
+    private By placeOrderBtn = By.cssSelector("#page-wrapper > div > div.col-lg-1 > button");
+    private By orderForm = By.cssSelector("#orderModal > div > div > div.modal-body > form");
     private By totalLabel = By.id("totalp");
+    private By purchaseBtn = By.cssSelector("#orderModal > div > div > div.modal-footer > button.btn.btn-primary");
 
 
 
@@ -47,8 +49,17 @@ public class CartPage {
         return driver.findElement(placeOrderBtn).isDisplayed();
     }
 
-    public void clickPlaceOrder() {
+    public void clickPlaceOrderButton() {
         driver.findElement(placeOrderBtn).click();
+    }
+
+    public boolean isOrderFormDisplayed() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(orderForm));
+        return driver.findElement(orderForm).isDisplayed();
+    }
+
+    public void clickPurchaseButton(){
+        driver.findElement(purchaseBtn).click();
     }
 
     public HomePage clickHome(){

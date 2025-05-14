@@ -53,4 +53,13 @@ public class ProductSGS6 {
         wait.until(ExpectedConditions.elementToBeClickable(home)).click();
         return new HomePage(driver);
     }
+
+    public boolean isProductTitleVisible() {
+        return driver.findElement(By.cssSelector(".name")).isDisplayed(); // adjust selector
+    }
+
+    public boolean isAddToCartVisible() {
+        return driver.findElement(By.cssSelector(".btn.btn-success.btn-lg")).isDisplayed(); // adjust if needed
+    }
+
 }

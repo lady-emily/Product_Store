@@ -1,47 +1,106 @@
 package pages;
-//import base.BaseTests;
-import pages.CartPage;
 
-//import org.testng.Assert;
-//import org.testng.annotations.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
 import java.time.Duration;
+import java.util.List;
 
 public class HomePage {
 
-    //fields
     private WebDriver driver;
     private WebDriverWait wait;
 
-    //locators
-    private By contact = By.xpath("/html/body/nav/div[1]/ul/li[2]/a");
-    private By aboutUs = By.xpath("/html/body/nav/div[1]/ul/li[3]/a");
+    // Locators
+    private By contactLink = By.linkText("Contact");
+    private By aboutUsLink = By.linkText("About us");
+    private By cartLink = By.cssSelector("#navbarExample > ul > li:nth-child(4) > a");
+    private By loginLink = By.linkText("Log in");
+    private By signUpLink = By.linkText("Sign up");
     private By cart = By.cssSelector("#navbarExample > ul > li:nth-child(4) > a");
-    private By addToCartButton = By.xpath("/html/body/div[5]/div/div[2]/div[2]/div/a");
-    private By logIn = By.xpath("/html/body/nav/div[1]/ul/li[5]/a");
-    private By signUp = By.xpath("/html/body/nav/div[1]/ul/li[8]/a");
-    private By phones = By.xpath("/html/body/div[5]/div/div[1]/div/a[2]");
-    private By laptops = By.xpath("/html/body/div[5]/div/div[1]/div/a[3]");
-    private By monitors = By.xpath("/html/body/div[5]/div/div[1]/div/a[4]");
-    private By samsungGalaxyS6 = By.xpath("/html/body/div[5]/div/div[2]/div/div[1]/div/div/h4/a");
-    private By samsungPicture = By.xpath("/html/body/div[5]/div/div[2]/div/div[1]/div/a/img");
-    private By samsungPrice = By.name("$360");
+    private By productCards = By.cssSelector(".card.h-100");
+    private By productNames = By.cssSelector(".card-title a");
+    private By productPrices = By.cssSelector(".card-block .price-container");
+    private By productThumbnails = By.cssSelector(".card-img-top");
 
-    //constructor
-    public HomePage(WebDriver driver){
+    private By samsungGalaxyS6 = By.xpath("//a[text()='Samsung galaxy s6']");
+
+    public HomePage(WebDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         PageFactory.initElements(driver, this);
     }
 
-    //methods
+    public boolean isContactVisible() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(contactLink)).isDisplayed();
+    }
+
+    public boolean isCartVisible() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(cartLink)).isDisplayed();
+    }
+
+    public boolean isLoginVisible() {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(loginLink)).isDisplayed();
+    }
+
+    public boolean areProductsVisible() {
+        return wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(productCards)).size() > 0;
+    }
+
+    public boolean doAllProductsHaveDetails() {
+        // Wait until the entire list of product containers is visible
+        List<WebElement> productCards = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("#tbodyid > div")));
+
+        boolean allValid = true;
+        int index = 1;
+
+        for (WebElement card : productCards) {
+            try {
+                // Add an inner wait for each individual card’s components
+                WebElement name = wait.until(ExpectedConditions.visibilityOf(card.findElement(By.cssSelector("div > div > h4"))));
+                WebElement price = wait.until(ExpectedConditions.visibilityOf(card.findElement(By.cssSelector("div > div > h5"))));
+                WebElement description = wait.until(ExpectedConditions.visibilityOf(card.findElement(By.cssSelector("div > div > #article"))));
+                WebElement image = wait.until(ExpectedConditions.visibilityOf(card.findElement(By.cssSelector("div > a > img"))));
+
+                boolean isValid = true;
+
+                if (name.getText().isEmpty()) {
+                    System.out.println("❌ Product " + index + " is missing name");
+                    isValid = false;
+                }
+                if (price.getText().isEmpty()) {
+                    System.out.println("❌ Product " + index + " is missing price");
+                    isValid = false;
+                }
+                if (description.getText().isEmpty()) {
+                    System.out.println("❌ Product " + index + " is missing description");
+                    isValid = false;
+                }
+                if (!image.isDisplayed()) {
+                    System.out.println("❌ Product " + index + " image is not displayed");
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    allValid = false;
+                }
+
+            } catch (NoSuchElementException | TimeoutException e) {
+                System.out.println("⚠️ Product " + index + " is missing one or more elements entirely: " + e.getMessage());
+                allValid = false;
+            }
+
+            index++;
+        }
+
+        return allValid;
+    }
+
+
+
+
+
     public ProductSGS6 clickSamsungGalaxyS6() {
         wait.until(ExpectedConditions.elementToBeClickable(samsungGalaxyS6)).click();
         return new ProductSGS6(driver);
@@ -51,13 +110,4 @@ public class HomePage {
         wait.until(ExpectedConditions.elementToBeClickable(cart)).click();
         return new CartPage(driver);
     }
-
-    public void clickAddToCart() {
-        wait.until(ExpectedConditions.elementToBeClickable(addToCartButton)).click();
-
-        // Wait for alert and accept
-        driver.switchTo().alert().accept();
-        driver.navigate().back(); // Return to home page after adding
-    }
-
 }

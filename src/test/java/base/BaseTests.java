@@ -1,6 +1,7 @@
 package base;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.checkerframework.checker.units.qual.C;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -8,6 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import pages.CartPage;
 import pages.HomePage;
+import pages.ProductSGS6;
 
 import java.sql.SQLOutput;
 import java.time.Duration;
@@ -32,6 +34,9 @@ public class BaseTests {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 
         System.out.println(driver.getTitle());
+
+        homePage = new HomePage(driver);
+        cartPage = new CartPage(driver);
 
 
     }
