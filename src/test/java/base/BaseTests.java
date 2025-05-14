@@ -21,13 +21,13 @@ public class BaseTests {
 
     @BeforeClass
     public void setUp() {
-//        ChromeOptions options = new ChromeOptions();
-//        options.addArguments("--headless"); //Run in headless mode
-//        options.addArguments("--incognito"); //Disable GPU acceleration
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless"); //Run in headless mode
+        options.addArguments("--incognito"); //Disable GPU acceleration
 
         //WebDriver Initialisation
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+        WebDriverManager.chromedriver().clearDriverCache().setup();
+        driver = new ChromeDriver(options);
         System.out.println("Initialising Chrome Browser...");
         driver.get("https://www.demoblaze.com/index.html");
         driver.manage().window().maximize();
