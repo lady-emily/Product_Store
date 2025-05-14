@@ -58,6 +58,6 @@ public class CartTests extends BaseTests {
 
     @Test(dependsOnMethods = "testAddSameProductTwiceIncreasesQuantity")
     public void testPlaceOrderButtonExists() {
-        Assert.assertTrue(driver.getPageSource().contains("Place Order"), "Place Order button is missing");
+        Assert.assertTrue(driver.getPageSource().contains("Place Order"), "Place Order button missing");
     }
 }
