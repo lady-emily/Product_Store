@@ -108,6 +108,6 @@ public class HomePage {
     }
 
     public void clickContact() {
-        driver.findElement(By.id("contact")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(contactLink)).click();
     }
 }
